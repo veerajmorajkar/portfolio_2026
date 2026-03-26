@@ -8,14 +8,18 @@ const fontPixel = "'Press Start 2P', monospace";
 function SkipBackIcon() {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ imageRendering: "pixelated" }}>
-      {/* Vertical bar on left */}
-      <rect x="4" y="6" width="3" height="20" fill="currentColor"/>
-      {/* Pixel-art triangle pointing left */}
-      <rect x="10" y="14" width="2" height="4" fill="currentColor"/>
-      <rect x="12" y="12" width="2" height="8" fill="currentColor"/>
-      <rect x="14" y="10" width="2" height="12" fill="currentColor"/>
-      <rect x="16" y="8" width="2" height="16" fill="currentColor"/>
-      <rect x="18" y="6" width="2" height="20" fill="currentColor"/>
+      {/* First triangle pointing left */}
+      <rect x="4" y="14" width="2" height="4" fill="currentColor"/>
+      <rect x="6" y="12" width="2" height="8" fill="currentColor"/>
+      <rect x="8" y="10" width="2" height="12" fill="currentColor"/>
+      <rect x="10" y="8" width="2" height="16" fill="currentColor"/>
+      <rect x="12" y="6" width="2" height="20" fill="currentColor"/>
+      {/* Second triangle pointing left */}
+      <rect x="14" y="14" width="2" height="4" fill="currentColor"/>
+      <rect x="16" y="12" width="2" height="8" fill="currentColor"/>
+      <rect x="18" y="10" width="2" height="12" fill="currentColor"/>
+      <rect x="20" y="8" width="2" height="16" fill="currentColor"/>
+      <rect x="22" y="6" width="2" height="20" fill="currentColor"/>
     </svg>
   );
 }
@@ -47,14 +51,18 @@ function PauseIcon() {
 function SkipForwardIcon() {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none" style={{ imageRendering: "pixelated" }}>
-      {/* Pixel-art triangle pointing right */}
-      <rect x="8" y="6" width="2" height="20" fill="currentColor"/>
-      <rect x="10" y="8" width="2" height="16" fill="currentColor"/>
-      <rect x="12" y="10" width="2" height="12" fill="currentColor"/>
-      <rect x="14" y="12" width="2" height="8" fill="currentColor"/>
-      <rect x="16" y="14" width="2" height="4" fill="currentColor"/>
-      {/* Vertical bar on right */}
-      <rect x="21" y="6" width="3" height="20" fill="currentColor"/>
+      {/* First triangle pointing right */}
+      <rect x="6" y="6" width="2" height="20" fill="currentColor"/>
+      <rect x="8" y="8" width="2" height="16" fill="currentColor"/>
+      <rect x="10" y="10" width="2" height="12" fill="currentColor"/>
+      <rect x="12" y="12" width="2" height="8" fill="currentColor"/>
+      <rect x="14" y="14" width="2" height="4" fill="currentColor"/>
+      {/* Second triangle pointing right */}
+      <rect x="16" y="6" width="2" height="20" fill="currentColor"/>
+      <rect x="18" y="8" width="2" height="16" fill="currentColor"/>
+      <rect x="20" y="10" width="2" height="12" fill="currentColor"/>
+      <rect x="22" y="12" width="2" height="8" fill="currentColor"/>
+      <rect x="24" y="14" width="2" height="4" fill="currentColor"/>
     </svg>
   );
 }
