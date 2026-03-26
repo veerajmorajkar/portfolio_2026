@@ -87,20 +87,33 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
     const decaySpeed = 0.22; // Very fast decay for extreme dramatic dips
     
     const animate = (currentTime: number) => {
-      const deltaTime = currentTime - lastTime;
-      
-      // Only update at target FPS for consistent buttery smoothness
-      if (deltaTime >= frameInterval) {
-        lastTime = currentTime - (deltaTime % frameInterval);
+      try {
+        const deltaTime = currentTime - lastTime;
         
-        // Get multi-band beat intensity (kick, snare, hi-hat, bass)
-        const audioData = (audioPlayer as any).getMultiBandAudioData?.() || {
-          kick: audioPlayer.getAudioData(),
-          snare: 0,
-          hiHat: 0,
-          bass: 0,
-          combined: audioPlayer.getAudioData()
-        };
+        // Only update at target FPS for consistent buttery smoothness
+        if (deltaTime >= frameInterval) {
+          lastTime = currentTime - (deltaTime % frameInterval);
+          
+          // Get multi-band beat intensity (kick, snare, hi-hat, bass)
+          let audioData;
+          try {
+            audioData = (audioPlayer as any).getMultiBandAudioData?.() || {
+              kick: 0,
+              snare: 0,
+              hiHat: 0,
+              bass: 0,
+              combined: 0
+            };
+          } catch (err) {
+            console.error('Audio data error:', err);
+            audioData = {
+              kick: 0,
+              snare: 0,
+              hiHat: 0,
+              bass: 0,
+              combined: 0
+            };
+          }
         
         // Update each band with instant attack / fast decay for dramatic dips
         if (audioData.kick > kickIntensity) {
@@ -145,14 +158,24 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
         const bassGlow = 0.03 + (bassIntensity * 0.97);
         
         // Update CSS variables for smooth visual transitions
-        container.style.setProperty('--glow-intensity', glowIntensity.toString());
-        container.style.setProperty('--kick-intensity', kickGlow.toString());
-        container.style.setProperty('--snare-intensity', snareGlow.toString());
-        container.style.setProperty('--hihat-intensity', hiHatGlow.toString());
-        container.style.setProperty('--bass-intensity', bassGlow.toString());
+        if (container) {
+          container.style.setProperty('--glow-intensity', glowIntensity.toString());
+          container.style.setProperty('--kick-intensity', kickGlow.toString());
+          container.style.setProperty('--snare-intensity', snareGlow.toString());
+          container.style.setProperty('--hihat-intensity', hiHatGlow.toString());
+          container.style.setProperty('--bass-intensity', bassGlow.toString());
+        }
       }
       
       animationFrameRef.current = requestAnimationFrame(animate);
+    } catch (err) {
+      console.error('Aurora animation error:', err);
+      // Stop animation on error to prevent crash loop
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = undefined;
+      }
+    }
     };
 
     animationFrameRef.current = requestAnimationFrame(animate);

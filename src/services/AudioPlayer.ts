@@ -86,11 +86,12 @@ export class AudioPlayer implements AudioPlayerService {
     try {
       const section = getSectionById(sectionId);
       this.audio.src = section.audioSrc;
-      this.audio.load();
+      await this.audio.load();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load audio";
       this.errorCallback?.(message);
+      throw err; // Re-throw to prevent playback of failed audio
     }
   }
 
@@ -149,7 +150,8 @@ export class AudioPlayer implements AudioPlayerService {
    * Returns object with separate intensities for kick, snare, hi-hat, and bass
    */
   getAudioData(): number {
-    if (!this.analyserNode || !this.dataArray || !this.isPlaying()) {
+    // Safety check: ensure we have valid audio context and data array
+    if (!this.analyserNode || !this.dataArray || !this.ctx) {
       // Decay all intensities even when not playing
       this.kickIntensity *= this.beatDecayRate;
       this.snareIntensity *= this.beatDecayRate;
@@ -158,7 +160,21 @@ export class AudioPlayer implements AudioPlayerService {
       return Math.max(0, Math.min(1, (this.kickIntensity + this.snareIntensity + this.hiHatIntensity) / 3 + this.bassLevel * 0.15));
     }
 
+    // Don't analyze if audio isn't actually playing
+    if (!this.isPlaying()) {
+      this.kickIntensity *= this.beatDecayRate;
+      this.snareIntensity *= this.beatDecayRate;
+      this.hiHatIntensity *= this.beatDecayRate;
+      this.bassLevel *= 0.85;
+      return Math.max(0, Math.min(1, (this.kickIntensity + this.snareIntensity + this.hiHatIntensity) / 3 + this.bassLevel * 0.15));
+    }
+
     try {
+      // Verify the data array is still valid
+      if (!this.dataArray || this.dataArray.length === 0) {
+        return 0;
+      }
+
       this.analyserNode.getByteFrequencyData(this.dataArray);
 
       // Precise frequency band analysis for musical elements
@@ -298,8 +314,8 @@ export class AudioPlayer implements AudioPlayerService {
    * Returns separate intensities for each frequency band
    */
   getMultiBandAudioData(): { kick: number; snare: number; hiHat: number; bass: number; combined: number } {
-    // Ensure intensities are decayed even when not actively analyzing
-    if (!this.analyserNode || !this.dataArray || !this.isPlaying()) {
+    // Safety check
+    if (!this.analyserNode || !this.dataArray || !this.ctx || !this.isPlaying()) {
       this.kickIntensity *= this.beatDecayRate;
       this.snareIntensity *= this.beatDecayRate;
       this.hiHatIntensity *= this.beatDecayRate;
