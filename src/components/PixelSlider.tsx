@@ -18,7 +18,7 @@ interface PixelSliderProps {
 
 // Knob aspect ratio — update if the new asset has different dimensions
 const KNOB_ASPECT = 1;
-const KNOB_SRC = "/assets/images/knob.png";
+const KNOB_SRC = `${import.meta.env.BASE_URL}assets/images/knob.png`;
 
 /**
  * A draggable pixel-art slider that uses the custom knob.png asset.

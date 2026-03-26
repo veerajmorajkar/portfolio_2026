@@ -1,12 +1,18 @@
 import type { SectionData, SectionId } from "../types";
 
+// Helper to get asset path with correct base URL
+const getAssetPath = (path: string) => {
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}${path.startsWith('/') ? path.slice(1) : path}`;
+};
+
 export const SECTIONS: SectionData[] = [
   {
     id: "experience",
     title: "Experience",
     discColor: "#EE4B2B",
-    discImage: "/assets/images/section_disks_1.png",
-    audioSrc: "/assets/audio/experience_audio.mp3",
+    discImage: getAssetPath("assets/images/section_disks_1.png"),
+    audioSrc: getAssetPath("assets/audio/experience_audio.mp3"),
     songName: "Fred again.. - Angie (I've Been Lost)",
     content: {
       type: "experience",
@@ -30,8 +36,8 @@ export const SECTIONS: SectionData[] = [
     id: "skills",
     title: "Skills",
     discColor: "#ca2c92",
-    discImage: "/assets/images/section_disks_3.png",
-    audioSrc: "/assets/audio/skills_audio.mp3",
+    discImage: getAssetPath("assets/images/section_disks_3.png"),
+    audioSrc: getAssetPath("assets/audio/skills_audio.mp3"),
     songName: "RICK OWENS - Ufo361 feat. Ken Carson",
     content: {
       type: "skills",
@@ -59,8 +65,8 @@ export const SECTIONS: SectionData[] = [
     id: "education",
     title: "Education",
     discColor: "#624CAB",
-    discImage: "/assets/images/section_disks_4.png",
-    audioSrc: "/assets/audio/education_audio.mp3",
+    discImage: getAssetPath("assets/images/section_disks_4.png"),
+    audioSrc: getAssetPath("assets/audio/education_audio.mp3"),
     songName: "Jaded - Drake",
     content: {
       type: "education",
@@ -87,8 +93,8 @@ export const SECTIONS: SectionData[] = [
     id: "projects",
     title: "Projects",
     discColor: "#5CF64A",
-    discImage: "/assets/images/section_disks_5.png",
-    audioSrc: "/assets/audio/projects_audio.mp3",
+    discImage: getAssetPath("assets/images/section_disks_5.png"),
+    audioSrc: getAssetPath("assets/audio/projects_audio.mp3"),
     songName: "Pink + White - Frank Ocean",
     content: {
       type: "projects",
@@ -100,7 +106,7 @@ export const SECTIONS: SectionData[] = [
             { label: "GitHub", url: "https://github.com/veerajmorajkar/register-system" },
             { label: "Preview", url: "#preview" },
           ],
-          previewImage: "/assets/images/login_logout_preview.png",
+          previewImage: getAssetPath("assets/images/login_logout_preview.png"),
         },
         {
           name: "Twitter Data Pipeline",
@@ -108,7 +114,7 @@ export const SECTIONS: SectionData[] = [
           links: [
             { label: "Preview", url: "#preview" },
           ],
-          previewImage: "/assets/images/twitter_pipeline_preview.jpg",
+          previewImage: getAssetPath("assets/images/twitter_pipeline_preview.jpg"),
         },
         {
           name: "Brick Breaker Game",
@@ -116,7 +122,7 @@ export const SECTIONS: SectionData[] = [
           links: [
             { label: "Preview", url: "#preview" },
           ],
-          previewImage: "/assets/images/ball_break_preview.png",
+          previewImage: getAssetPath("assets/images/ball_break_preview.png"),
         },
       ],
     },
@@ -125,8 +131,8 @@ export const SECTIONS: SectionData[] = [
     id: "about",
     title: "The Introduction",
     discColor: "#30D5C8",
-    discImage: "/assets/images/section_disks_2.png",
-    audioSrc: "/assets/audio/aboutme_audio.mp3",
+    discImage: getAssetPath("assets/images/section_disks_2.png"),
+    audioSrc: getAssetPath("assets/audio/aboutme_audio.mp3"),
     songName: "Sober to Death - Car Seat Headrest",
     content: {
       type: "about",
@@ -144,7 +150,7 @@ export const SECTIONS: SectionData[] = [
 ];
 
 /** The 5th disc image is used as the main vinyl record on the platter */
-export const VINYL_RECORD_IMAGE = "/assets/images/section_disks_5.png";
+export const VINYL_RECORD_IMAGE = getAssetPath("assets/images/section_disks_5.png");
 
 export function getSectionById(id: SectionId): SectionData {
   const section = SECTIONS.find((s) => s.id === id);

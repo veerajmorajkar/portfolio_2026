@@ -169,7 +169,7 @@ function renderAbout(c: AboutContent) {
               href={l.url}
               onClick={l.label === "→ RESUME" ? () => {
                 const link = document.createElement('a');
-                link.href = '/assets/images/resume_2026.pdf';
+                link.href = `${import.meta.env.BASE_URL}assets/images/resume_2026.pdf`;
                 link.download = 'Veeraj_Morajkar_Resume_2026.pdf';
                 document.body.appendChild(link);
                 link.click();

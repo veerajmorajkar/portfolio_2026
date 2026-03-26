@@ -1,3 +1,9 @@
+// Helper to get asset path with correct base URL
+const getAssetPath = (path: string) => {
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}${path.startsWith('/') ? path.slice(1) : path}`;
+};
+
 export const TOKENS = {
   colors: {
     background: "#000000",
@@ -36,8 +42,8 @@ export const TOKENS = {
     mobile: 768, // px
   },
   images: {
-    turntable: "/assets/images/turntable.png",
-    tonearm: "/assets/images/turntable_arm.png",
-    knob: "/assets/images/knob.png",
+    turntable: getAssetPath("assets/images/turntable.png"),
+    tonearm: getAssetPath("assets/images/turntable_arm.png"),
+    knob: getAssetPath("assets/images/knob.png"),
   },
 } as const;
