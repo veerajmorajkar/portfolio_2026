@@ -35,9 +35,15 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const isHorizontal = orientation === "horizontal";
   const knobHeight = knobWidth / KNOB_ASPECT;
+
+  // Ensure component is mounted before calculating positions
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const clamp = (v: number) => Math.max(0, Math.min(1, v));
 
@@ -124,9 +130,11 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
 
   // Knob slides from 0 to (track - knobSize), keeping it fully within the track
   const knobDim = isHorizontal ? knobWidth : knobHeight;
-  const knobOffset = isHorizontal
-    ? `calc(${value} * (100% - ${knobDim}px))`
-    : `calc(${1 - value} * (100% - ${knobDim}px))`;
+  const knobOffset = mounted 
+    ? (isHorizontal
+      ? `calc(${value} * (100% - ${knobDim}px))`
+      : `calc(${1 - value} * (100% - ${knobDim}px))`)
+    : '0px'; // Start at 0 until mounted to prevent flash
 
   return (
     <div

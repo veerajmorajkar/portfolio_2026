@@ -8,6 +8,7 @@ import { MusicPlayer } from "./components/MusicPlayer";
 import { SocialIcons } from "./components/SocialIcons";
 import { AuroraGlow } from "./components/AuroraGlow";
 import { IntroScreen } from "./components/IntroScreen";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { getSectionById } from "./data/sections";
 import { TOKENS } from "./data/tokens";
 import type { SectionId } from "./types";
@@ -766,9 +767,11 @@ function AppContent() {
 
 function App() {
   return (
-    <TurntableProvider>
-      <AppContent />
-    </TurntableProvider>
+    <ErrorBoundary>
+      <TurntableProvider>
+        <AppContent />
+      </TurntableProvider>
+    </ErrorBoundary>
   );
 }
 

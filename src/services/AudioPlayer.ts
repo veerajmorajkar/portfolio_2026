@@ -65,7 +65,7 @@ export class AudioPlayer implements AudioPlayerService {
       this.analyserNode.fftSize = 4096; // Even higher resolution for precise frequency separation
       this.analyserNode.smoothingTimeConstant = 0.1; // Minimal smoothing for instant transient response
       const bufferLength = this.analyserNode.frequencyBinCount;
-      this.dataArray = new Uint8Array(new ArrayBuffer(bufferLength));
+      this.dataArray = new Uint8Array(bufferLength);
 
       this.filterNode.type = "lowpass";
       this.filterNode.frequency.value = 20000; // wide open by default
