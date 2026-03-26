@@ -106,6 +106,30 @@ const TurntableComponent: React.FC<TurntableProps> = ({
   }, [cssReady]);
   
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 900;
+  
+  // Calculate precise transform for volume slider based on screen height
+  const getVolumeSliderTransform = () => {
+    if (typeof window === 'undefined') return "translateY(calc(var(--turntable-width) * 0.14))";
+    
+    if (!isMobile) {
+      return "translateY(calc(var(--turntable-width) * 0.14))";
+    }
+    
+    const screenHeight = window.innerHeight;
+    
+    // iPhone 12 and similar (6.1" - around 844px height)
+    if (screenHeight >= 800 && screenHeight <= 900) {
+      return "translateY(calc(var(--turntable-width) * 0.142))"; // Slightly more down
+    }
+    // Smaller phones
+    else if (screenHeight < 700) {
+      return "translateY(calc(var(--turntable-width) * 0.130))";
+    }
+    // Default mobile
+    else {
+      return "translateY(calc(var(--turntable-width) * 0.135))";
+    }
+  };
 
   return (
     <div
@@ -174,9 +198,7 @@ const TurntableComponent: React.FC<TurntableProps> = ({
         left: SLIDER_TRACKS.upperLeft.left,
         top: SLIDER_TRACKS.upperLeft.top,
         width: SLIDER_TRACKS.upperLeft.width,
-        transform: isMobile 
-          ? "translateY(calc(var(--turntable-width) * 0.135))" 
-          : "translateY(calc(var(--turntable-width) * 0.14))",
+        transform: getVolumeSliderTransform(),
       }}>
         <PixelSlider
           value={volume}
