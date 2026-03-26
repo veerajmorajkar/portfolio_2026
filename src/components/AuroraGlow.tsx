@@ -82,7 +82,7 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
     let bassIntensity = 0.0;
     
     let lastTime = performance.now();
-    const targetFPS = isMobile ? 30 : 60; // Lower FPS on mobile to prevent crashes
+    const targetFPS = isMobile ? 24 : 60; // Even lower FPS on mobile (24fps is cinematic and smooth enough)
     const frameInterval = 1000 / targetFPS;
     
     // Faster decay for more dramatic dips

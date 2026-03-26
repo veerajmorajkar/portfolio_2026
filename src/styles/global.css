@@ -368,6 +368,15 @@ img {
   }
 }
 
+/* Extra small mobile screens - prevent bottom knob from being pushed up */
+@media screen and (max-width: 768px) and (orientation: portrait) and (max-height: 650px) {
+  :root {
+    --turntable-top: 27vh; /* Move turntable up more */
+    --turntable-width: 125vw; /* Even smaller turntable */
+    --knob-size: 3.4vh; /* Even smaller knobs */
+  }
+}
+
 /* Small Mobile Portrait (up to 480px) */
 @media screen and (max-width: 480px) and (orientation: portrait) {
   :root {
@@ -875,5 +884,15 @@ img[src*="/assets/"] {
   100% {
     opacity: 1;
     scale: 1;
+  }
+}
+
+/* Loading pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
   }
 }

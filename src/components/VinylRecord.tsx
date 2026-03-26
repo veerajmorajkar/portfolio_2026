@@ -27,9 +27,11 @@ const VinylRecordComponent: React.FC<VinylRecordProps> = ({ isSpinning, sectionT
     if (!el) return;
 
     if (isSpinning) {
-      // Use CSS animation for ultra-smooth spinning
+      // Use CSS animation for ultra-smooth spinning with hardware acceleration
       el.style.animation = `spin ${SPIN_DURATION}s linear infinite`;
       el.style.willChange = "transform";
+      // Force hardware acceleration
+      el.style.transform = `rotate(${baseRotation}deg) translateZ(0)`;
     } else {
       // When paused, stop animation and maintain current rotation
       const computedStyle = window.getComputedStyle(el);
@@ -46,7 +48,7 @@ const VinylRecordComponent: React.FC<VinylRecordProps> = ({ isSpinning, sectionT
       
       // Remove animation and set fixed rotation
       el.style.animation = "none";
-      el.style.transform = `rotate(${currentRotation}deg)`;
+      el.style.transform = `rotate(${currentRotation}deg) translateZ(0)`;
       el.style.willChange = "auto";
     }
   }, [isSpinning, baseRotation]);
@@ -66,11 +68,11 @@ const VinylRecordComponent: React.FC<VinylRecordProps> = ({ isSpinning, sectionT
         backgroundRepeat: "no-repeat",
         imageRendering: "pixelated",
         transformOrigin: "center center",
-        transform: `rotate(${baseRotation}deg)`,
+        transform: `rotate(${baseRotation}deg) translateZ(0)`,
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
-        perspective: 1000,
-        WebkitPerspective: 1000,
+        WebkitFontSmoothing: "antialiased",
+        willChange: "transform",
       }}
     />
   );

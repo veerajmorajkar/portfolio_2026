@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { motion, useAnimationControls } from "framer-motion";
 import { TurntableProvider, useTurntable } from "./context/TurntableContext";
 import { Turntable } from "./components/Turntable";
@@ -70,6 +70,7 @@ function AppContent() {
   const [introAnimating, setIntroAnimating] = useState(false);
   const [showMainElements, setShowMainElements] = useState(false);
   const [showPersistentUI, setShowPersistentUI] = useState(false); // For music player and social icons
+  const [layoutReady, setLayoutReady] = useState(false); // Wait for CSS to be fully applied
 
   const turntableControls = useAnimationControls();
   const stackControls = useAnimationControls();
@@ -84,6 +85,44 @@ function AppContent() {
   const [flyingVisible, setFlyingVisible] = useState(false);
   const [flyingZIndex, setFlyingZIndex] = useState(999);
   const flyingImgRef = useRef<HTMLImageElement>(null);
+
+  // Wait for CSS variables and layout to be ready before rendering
+  useEffect(() => {
+    let mounted = true;
+    
+    const checkLayout = () => {
+      // Wait for CSS variables to be computed
+      const turntableWidth = getComputedStyle(document.documentElement)
+        .getPropertyValue('--turntable-width')
+        .trim();
+      
+      const discSize = getComputedStyle(document.documentElement)
+        .getPropertyValue('--disc-size')
+        .trim();
+      
+      // Check if CSS variables are loaded and have values
+      if (turntableWidth && discSize && turntableWidth !== '' && discSize !== '') {
+        // Wait one more frame to ensure everything is painted
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (mounted) {
+              setLayoutReady(true);
+            }
+          });
+        });
+      } else {
+        // Retry if CSS isn't ready
+        setTimeout(checkLayout, 50);
+      }
+    };
+    
+    // Start checking after a small delay
+    setTimeout(checkLayout, 100);
+    
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // --- Helpers to read live positions ---
   const getPlatterCenter = useCallback(() => {
@@ -168,59 +207,67 @@ function AppContent() {
     setPlatterDiscId("about");
     dispatch({ type: "SELECT_DISC", discId: "about" });
 
-    // Initialize turntable and stack off-screen with subtle squash
+    // Initialize turntable and stack off-screen with subtle squash and hardware acceleration
     turntableControls.set({
       x: "-150%", // Far left off-screen
       scaleX: 0.85,
       scaleY: 1.15,
+      z: 0, // Force 3D context
     });
     
     stackControls.set({
       x: "150%", // Far right off-screen
       scaleX: 0.85,
       scaleY: 1.15,
+      z: 0, // Force 3D context
     });
 
-    // Start all animations simultaneously
+    // Start all animations simultaneously with optimized easing
     const turntableAnimation = (async () => {
-      // Slide in with subtle stretch
+      // Slide in with subtle stretch - use GPU-accelerated transform
       await turntableControls.start({
         x: "0%",
         scaleX: 1.04,
         scaleY: 0.96,
-        transition: { duration: 0.5, ease: "easeOut" },
+        transition: { 
+          duration: 0.5, 
+          ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier for smoothness
+        },
       });
       // Gentle settle
       await turntableControls.start({
         scaleX: 0.98,
         scaleY: 1.02,
-        transition: { duration: 0.12, ease: "easeInOut" },
+        transition: { duration: 0.12, ease: [0.4, 0, 0.2, 1] },
       });
       await turntableControls.start({
         scaleX: 1,
         scaleY: 1,
-        transition: { duration: 0.1, ease: "easeOut" },
+        transition: { duration: 0.1, ease: [0.4, 0, 0.2, 1] },
       });
     })();
 
     const stackAnimation = (async () => {
-      // Slide in with subtle stretch
+      // Slide in with subtle stretch - use GPU-accelerated transform
       await stackControls.start({
         x: "0%",
         scaleX: 1.04,
         scaleY: 0.96,
-        transition: { duration: 0.5, ease: "easeOut" },
+        transition: { 
+          duration: 0.5, 
+          ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier for smoothness
+        },
       });
       // Gentle settle
       await stackControls.start({
         scaleX: 0.98,
         scaleY: 1.02,
-        transition: { duration: 0.12, ease: "easeInOut" },
+        transition: { duration: 0.12, ease: [0.4, 0, 0.2, 1] },
       });
       await stackControls.start({
         scaleX: 1,
         scaleY: 1,
-        transition: { duration: 0.1, ease: "easeOut" },
+        transition: { duration: 0.1, ease: [0.4, 0, 0.2, 1] },
       });
     })();
 
@@ -332,22 +379,22 @@ function AppContent() {
       scaleY: 1,
     });
 
-    // 1. Hop up: squash then stretch upward
+    // 1. Hop up: squash then stretch upward - optimized for smoothness
     await flyingControls.start({
       scaleX: 1.08,
       scaleY: 0.92,
-      transition: { duration: 0.08 },
+      transition: { duration: 0.08, ease: [0.4, 0, 0.2, 1] },
     });
     await flyingControls.start({
       y: slotCenter.y - 60,
       scaleX: 0.95,
       scaleY: 1.06,
-      transition: { duration: 0.15, ease: "easeOut" },
+      transition: { duration: 0.15, ease: [0.25, 0.1, 0.25, 1] },
     });
 
     setFlyingZIndex(999);
 
-    // 2. Arc to platter - NO size change
+    // 2. Arc to platter - smooth cubic-bezier easing
     const midX = (slotCenter.x + platter.x) / 2;
     const midY = Math.min(slotCenter.y - 60, platter.y) - 100;
 
@@ -356,30 +403,30 @@ function AppContent() {
       y: midY,
       scaleX: 1,
       scaleY: 1,
-      transition: { duration: 0.2, ease: "easeInOut" },
+      transition: { duration: 0.2, ease: [0.42, 0, 0.58, 1] },
     });
 
     await flyingControls.start({
       x: platter.x,
       y: platter.y,
-      transition: { duration: 0.2, ease: "easeIn" },
+      transition: { duration: 0.2, ease: [0.32, 0, 0.67, 0] },
     });
 
-    // 3. Land squash-settle
+    // 3. Land squash-settle - optimized timing
     await flyingControls.start({
       scaleX: 1.06,
       scaleY: 0.94,
-      transition: { duration: 0.08 },
+      transition: { duration: 0.08, ease: [0.4, 0, 0.2, 1] },
     });
     await flyingControls.start({
       scaleX: 0.98,
       scaleY: 1.02,
-      transition: { duration: 0.08 },
+      transition: { duration: 0.08, ease: [0.4, 0, 0.2, 1] },
     });
     await flyingControls.start({
       scaleX: 1,
       scaleY: 1,
-      transition: { duration: 0.06 },
+      transition: { duration: 0.06, ease: [0.4, 0, 0.2, 1] },
     });
   }, [flyingControls, getPlatterCenter, getSlotCenter, getSlotSize, getSlotZIndex]);
 
@@ -625,8 +672,33 @@ function AppContent() {
 
   return (
     <>
+      {/* Loading screen while CSS variables are being applied */}
+      {!layoutReady && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: TOKENS.colors.background,
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <div style={{
+            fontFamily: "'Press Start 2P', monospace",
+            fontSize: '12px',
+            color: TOKENS.colors.textPrimary,
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}>
+            Loading...
+          </div>
+        </div>
+      )}
+      
       {/* Intro Screen */}
-      {showIntro && <IntroScreen onDiscClick={handleIntroDiscClick} />}
+      {layoutReady && showIntro && <IntroScreen onDiscClick={handleIntroDiscClick} />}
 
       {/* Main Content - scrollable container */}
       <div
@@ -662,6 +734,8 @@ function AppContent() {
               left: "var(--turntable-left)", 
               zIndex: 1,
               opacity: showMainElements ? 1 : 0,
+              willChange: "transform, opacity",
+              transform: "translateZ(0)", // Force hardware acceleration
             }}
           >
             <Turntable
@@ -681,6 +755,8 @@ function AppContent() {
               display: "flex", 
               alignItems: "center",
               opacity: showMainElements ? 1 : 0,
+              willChange: "transform, opacity",
+              transform: "translateZ(0)", // Force hardware acceleration
             }}
           >
             <DiscStack
@@ -741,6 +817,8 @@ function AppContent() {
               display: flyingVisible ? "block" : "none",
               width: "var(--disc-size)", // Use CSS variable for consistent size
               height: "var(--disc-size)",
+              willChange: "transform, opacity",
+              transform: "translateZ(0)", // Force hardware acceleration
             }}
           >
             {flyingImage && (

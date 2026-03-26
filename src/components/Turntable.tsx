@@ -57,27 +57,53 @@ const TurntableComponent: React.FC<TurntableProps> = ({
   const tonearmState = tonearmReady ? deriveTonearmState(playbackState) : "parked";
   const isSpinning = playbackState === "playing" && tonearmReady;
   
-  // Calculate knob size more reliably
+  // Calculate knob size more reliably - wait for CSS to be ready
   const [knobSize, setKnobSize] = useState(74);
+  const [cssReady, setCssReady] = useState(false);
   
   useEffect(() => {
+    let mounted = true;
+    
     const calculateKnobSize = () => {
-      const knobSizeVh = parseFloat(
-        getComputedStyle(document.documentElement)
-          .getPropertyValue('--knob-size')
-          .trim()
-      );
-      const size = (knobSizeVh * window.innerHeight) / 100;
-      setKnobSize(size);
+      const knobSizeStr = getComputedStyle(document.documentElement)
+        .getPropertyValue('--knob-size')
+        .trim();
+      
+      if (knobSizeStr && knobSizeStr !== '') {
+        const knobSizeVh = parseFloat(knobSizeStr);
+        const size = (knobSizeVh * window.innerHeight) / 100;
+        if (mounted) {
+          setKnobSize(size);
+          setCssReady(true);
+        }
+      } else {
+        // Retry if CSS variable isn't ready
+        setTimeout(calculateKnobSize, 50);
+      }
     };
     
-    // Calculate on mount
-    calculateKnobSize();
+    // Calculate on mount with small delay
+    setTimeout(calculateKnobSize, 100);
     
     // Recalculate on resize
-    window.addEventListener('resize', calculateKnobSize);
-    return () => window.removeEventListener('resize', calculateKnobSize);
-  }, []);
+    const handleResize = () => {
+      if (cssReady) {
+        const knobSizeVh = parseFloat(
+          getComputedStyle(document.documentElement)
+            .getPropertyValue('--knob-size')
+            .trim()
+        );
+        const size = (knobSizeVh * window.innerHeight) / 100;
+        setKnobSize(size);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      mounted = false;
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [cssReady]);
   
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 900;
 
