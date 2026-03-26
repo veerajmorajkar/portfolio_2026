@@ -62,6 +62,9 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
 
   // Beat-reactive pulsation with instant peaks and smooth buttery decay
   useEffect(() => {
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    return;
+    
     if (!visible || !containerRef.current) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
