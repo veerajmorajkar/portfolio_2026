@@ -35,14 +35,21 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   const isHorizontal = orientation === "horizontal";
   const knobHeight = knobWidth / KNOB_ASPECT;
 
-  // Ensure component is mounted before calculating positions
+  // Wait for component to mount and layout to complete
   useEffect(() => {
-    setMounted(true);
+    // Use requestAnimationFrame to ensure layout is complete
+    const frame1 = requestAnimationFrame(() => {
+      const frame2 = requestAnimationFrame(() => {
+        setIsReady(true);
+      });
+      return () => cancelAnimationFrame(frame2);
+    });
+    return () => cancelAnimationFrame(frame1);
   }, []);
 
   const clamp = (v: number) => Math.max(0, Math.min(1, v));
@@ -130,11 +137,19 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
 
   // Knob slides from 0 to (track - knobSize), keeping it fully within the track
   const knobDim = isHorizontal ? knobWidth : knobHeight;
-  const knobOffset = mounted 
-    ? (isHorizontal
-      ? `calc(${value} * (100% - ${knobDim}px))`
-      : `calc(${1 - value} * (100% - ${knobDim}px))`)
-    : '0px'; // Start at 0 until mounted to prevent flash
+  
+  // Calculate position - use pixel values for precision
+  const getKnobPosition = () => {
+    if (!isReady) {
+      // Before ready, position at the correct spot but with opacity 0
+      return isHorizontal
+        ? `calc(${value * 100}% - ${value * knobDim}px)`
+        : `calc(${(1 - value) * 100}% - ${(1 - value) * knobDim}px)`;
+    }
+    return isHorizontal
+      ? `calc(${value * 100}% - ${value * knobDim}px)`
+      : `calc(${(1 - value) * 100}% - ${(1 - value) * knobDim}px)`;
+  };
 
   return (
     <div
@@ -167,14 +182,15 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
         draggable={false}
         style={{
           position: "absolute",
-          [isHorizontal ? "left" : "top"]: knobOffset,
+          [isHorizontal ? "left" : "top"]: getKnobPosition(),
           width: `${knobWidth}px`,
           height: `${knobHeight}px`,
           imageRendering: "pixelated",
           pointerEvents: "none",
           transform: knobRotation ? `rotate(${knobRotation}deg)` : undefined,
           filter: dragging ? "brightness(1.15)" : "none",
-          transition: dragging ? "none" : "filter 0.15s",
+          opacity: isReady ? 1 : 0,
+          transition: isReady ? (dragging ? "none" : "filter 0.15s, opacity 0.2s") : "opacity 0.2s",
         }}
       />
     </div>

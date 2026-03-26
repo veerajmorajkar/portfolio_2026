@@ -158,115 +158,139 @@ export class AudioPlayer implements AudioPlayerService {
       return Math.max(0, Math.min(1, (this.kickIntensity + this.snareIntensity + this.hiHatIntensity) / 3 + this.bassLevel * 0.15));
     }
 
-    this.analyserNode.getByteFrequencyData(this.dataArray! as any);
+    try {
+      this.analyserNode.getByteFrequencyData(this.dataArray);
 
-    // Precise frequency band analysis for musical elements
-    // Kick drum: 40-100Hz (sub-bass punch)
-    // Sustained bass: 40-250Hz (bass lines and low-end)
-    // Snare drum: 150-400Hz (body) + 2-6kHz (snap/crack)
-    // Hi-hats: 6-16kHz (sizzle and shimmer)
-    
-    const nyquist = (this.ctx?.sampleRate || 44100) / 2;
-    const binWidth = nyquist / this.dataArray.length;
-    
-    // Calculate bin ranges with precise boundaries
-    const kickStart = Math.floor(40 / binWidth);
-    const kickEnd = Math.floor(100 / binWidth);
-    const bassStart = Math.floor(40 / binWidth);
-    const bassEnd = Math.floor(250 / binWidth);
-    const snareBodyStart = Math.floor(150 / binWidth);
-    const snareBodyEnd = Math.floor(400 / binWidth);
-    const snareSnapStart = Math.floor(2000 / binWidth);
-    const snareSnapEnd = Math.floor(6000 / binWidth);
-    const hiHatStart = Math.floor(6000 / binWidth);
-    const hiHatEnd = Math.floor(16000 / binWidth);
-    
-    // Calculate kick energy (focused on sub-bass punch)
-    let kickEnergy = 0;
-    for (let i = kickStart; i < kickEnd; i++) {
-      kickEnergy += this.dataArray[i];
+      // Precise frequency band analysis for musical elements
+      // Kick drum: 40-100Hz (sub-bass punch)
+      // Sustained bass: 40-250Hz (bass lines and low-end)
+      // Snare drum: 150-400Hz (body) + 2-6kHz (snap/crack)
+      // Hi-hats: 6-16kHz (sizzle and shimmer)
+      
+      const nyquist = (this.ctx?.sampleRate || 44100) / 2;
+      const binWidth = nyquist / this.dataArray.length;
+      const maxBin = this.dataArray.length;
+      
+      // Calculate bin ranges with precise boundaries and bounds checking
+      const kickStart = Math.max(0, Math.floor(40 / binWidth));
+      const kickEnd = Math.min(maxBin, Math.floor(100 / binWidth));
+      const bassStart = Math.max(0, Math.floor(40 / binWidth));
+      const bassEnd = Math.min(maxBin, Math.floor(250 / binWidth));
+      const snareBodyStart = Math.max(0, Math.floor(150 / binWidth));
+      const snareBodyEnd = Math.min(maxBin, Math.floor(400 / binWidth));
+      const snareSnapStart = Math.max(0, Math.floor(2000 / binWidth));
+      const snareSnapEnd = Math.min(maxBin, Math.floor(6000 / binWidth));
+      const hiHatStart = Math.max(0, Math.floor(6000 / binWidth));
+      const hiHatEnd = Math.min(maxBin, Math.floor(16000 / binWidth));
+      
+      // Calculate kick energy (focused on sub-bass punch)
+      let kickEnergy = 0;
+      if (kickEnd > kickStart) {
+        for (let i = kickStart; i < kickEnd; i++) {
+          kickEnergy += this.dataArray[i] || 0;
+        }
+        kickEnergy = kickEnergy / (kickEnd - kickStart) / 255;
+      }
+      
+      // Calculate sustained bass energy (broader low-end)
+      let sustainedBass = 0;
+      if (bassEnd > bassStart) {
+        for (let i = bassStart; i < bassEnd; i++) {
+          sustainedBass += this.dataArray[i] || 0;
+        }
+        sustainedBass = sustainedBass / (bassEnd - bassStart) / 255;
+      }
+      
+      // Calculate snare energy (body + snap combined)
+      let snareEnergy = 0;
+      if (snareBodyEnd > snareBodyStart) {
+        for (let i = snareBodyStart; i < snareBodyEnd; i++) {
+          snareEnergy += (this.dataArray[i] || 0) * 0.4; // Body weight
+        }
+      }
+      if (snareSnapEnd > snareSnapStart) {
+        for (let i = snareSnapStart; i < snareSnapEnd; i++) {
+          snareEnergy += (this.dataArray[i] || 0) * 0.6; // Snap weight (higher for transient detection)
+        }
+      }
+      const snareCount = (snareBodyEnd - snareBodyStart) + (snareSnapEnd - snareSnapStart);
+      if (snareCount > 0) {
+        snareEnergy = snareEnergy / snareCount / 255;
+      }
+      
+      // Calculate hi-hat energy (high-frequency sizzle)
+      let hiHatEnergy = 0;
+      if (hiHatEnd > hiHatStart) {
+        for (let i = hiHatStart; i < hiHatEnd; i++) {
+          hiHatEnergy += this.dataArray[i] || 0;
+        }
+        hiHatEnergy = hiHatEnergy / (hiHatEnd - hiHatStart) / 255;
+      }
+      
+      // Update energy history for adaptive threshold calculation
+      this.bassHistory.push(kickEnergy);
+      this.snareHistory.push(snareEnergy);
+      this.hiHatHistory.push(hiHatEnergy);
+      if (this.bassHistory.length > this.historyLength) this.bassHistory.shift();
+      if (this.snareHistory.length > this.historyLength) this.snareHistory.shift();
+      if (this.hiHatHistory.length > this.historyLength) this.hiHatHistory.shift();
+      
+      // Calculate adaptive thresholds based on recent energy history
+      const bassAvg = this.bassHistory.reduce((a, b) => a + b, 0) / Math.max(1, this.bassHistory.length);
+      const snareAvg = this.snareHistory.reduce((a, b) => a + b, 0) / Math.max(1, this.snareHistory.length);
+      const hiHatAvg = this.hiHatHistory.reduce((a, b) => a + b, 0) / Math.max(1, this.hiHatHistory.length);
+      
+      // Onset detection: look for sudden increases above adaptive threshold
+      const kickOnset = Math.max(0, kickEnergy - this.previousBassEnergy);
+      const snareOnset = Math.max(0, snareEnergy - this.previousSnareEnergy);
+      const hiHatOnset = Math.max(0, hiHatEnergy - this.previousHiHatEnergy);
+      
+      // Adaptive thresholds with minimum floor
+      const kickThreshold = Math.max(0.05, bassAvg * 0.3);
+      const snareThreshold = Math.max(0.04, snareAvg * 0.25);
+      const hiHatThreshold = Math.max(0.03, hiHatAvg * 0.2);
+      
+      // Trigger dramatic pulses on onset detection with instant attack
+      if (kickOnset > kickThreshold) {
+        // Kick detected - explosive instant response
+        this.kickIntensity = Math.min(1, this.kickIntensity + kickOnset * 10.0);
+      }
+      if (snareOnset > snareThreshold) {
+        // Snare detected - explosive instant response
+        this.snareIntensity = Math.min(1, this.snareIntensity + snareOnset * 9.0);
+      }
+      if (hiHatOnset > hiHatThreshold) {
+        // Hi-hat detected - sharp instant response
+        this.hiHatIntensity = Math.min(1, this.hiHatIntensity + hiHatOnset * 8.0);
+      }
+      
+      // Very fast decay between beats for extreme dramatic dips
+      this.kickIntensity *= this.beatDecayRate;
+      this.snareIntensity *= this.beatDecayRate;
+      this.hiHatIntensity *= this.beatDecayRate;
+      
+      // Track sustained bass with smooth interpolation (adds subtle continuous glow)
+      this.bassLevel = this.bassLevel * 0.82 + sustainedBass * 0.18;
+      
+      // Store current energy for next frame comparison (minimal smoothing for sharp detection)
+      this.previousBassEnergy = kickEnergy * 0.7 + this.previousBassEnergy * 0.3;
+      this.previousSnareEnergy = snareEnergy * 0.7 + this.previousSnareEnergy * 0.3;
+      this.previousHiHatEnergy = hiHatEnergy * 0.7 + this.previousHiHatEnergy * 0.3;
+      
+      // Combine all elements: transients drive dramatic pulses, bass adds subtle continuous glow
+      // Weight kick highest (most dramatic), then snare, then hi-hat
+      const combined = (this.kickIntensity * 0.5) + (this.snareIntensity * 0.3) + (this.hiHatIntensity * 0.2) + (this.bassLevel * 0.1);
+      
+      return Math.max(0, Math.min(1, combined));
+    } catch (error) {
+      // If audio analysis fails, gracefully decay and return 0
+      console.error('Audio analysis error:', error);
+      this.kickIntensity *= this.beatDecayRate;
+      this.snareIntensity *= this.beatDecayRate;
+      this.hiHatIntensity *= this.beatDecayRate;
+      this.bassLevel *= 0.85;
+      return 0;
     }
-    kickEnergy = kickEnergy / (kickEnd - kickStart) / 255;
-    
-    // Calculate sustained bass energy (broader low-end)
-    let sustainedBass = 0;
-    for (let i = bassStart; i < bassEnd; i++) {
-      sustainedBass += this.dataArray[i];
-    }
-    sustainedBass = sustainedBass / (bassEnd - bassStart) / 255;
-    
-    // Calculate snare energy (body + snap combined)
-    let snareEnergy = 0;
-    for (let i = snareBodyStart; i < snareBodyEnd; i++) {
-      snareEnergy += this.dataArray[i] * 0.4; // Body weight
-    }
-    for (let i = snareSnapStart; i < snareSnapEnd; i++) {
-      snareEnergy += this.dataArray[i] * 0.6; // Snap weight (higher for transient detection)
-    }
-    snareEnergy = snareEnergy / ((snareBodyEnd - snareBodyStart) + (snareSnapEnd - snareSnapStart)) / 255;
-    
-    // Calculate hi-hat energy (high-frequency sizzle)
-    let hiHatEnergy = 0;
-    for (let i = hiHatStart; i < hiHatEnd; i++) {
-      hiHatEnergy += this.dataArray[i];
-    }
-    hiHatEnergy = hiHatEnergy / (hiHatEnd - hiHatStart) / 255;
-    
-    // Update energy history for adaptive threshold calculation
-    this.bassHistory.push(kickEnergy);
-    this.snareHistory.push(snareEnergy);
-    this.hiHatHistory.push(hiHatEnergy);
-    if (this.bassHistory.length > this.historyLength) this.bassHistory.shift();
-    if (this.snareHistory.length > this.historyLength) this.snareHistory.shift();
-    if (this.hiHatHistory.length > this.historyLength) this.hiHatHistory.shift();
-    
-    // Calculate adaptive thresholds based on recent energy history
-    const bassAvg = this.bassHistory.reduce((a, b) => a + b, 0) / this.bassHistory.length;
-    const snareAvg = this.snareHistory.reduce((a, b) => a + b, 0) / this.snareHistory.length;
-    const hiHatAvg = this.hiHatHistory.reduce((a, b) => a + b, 0) / this.hiHatHistory.length;
-    
-    // Onset detection: look for sudden increases above adaptive threshold
-    const kickOnset = Math.max(0, kickEnergy - this.previousBassEnergy);
-    const snareOnset = Math.max(0, snareEnergy - this.previousSnareEnergy);
-    const hiHatOnset = Math.max(0, hiHatEnergy - this.previousHiHatEnergy);
-    
-    // Adaptive thresholds with minimum floor
-    const kickThreshold = Math.max(0.05, bassAvg * 0.3);
-    const snareThreshold = Math.max(0.04, snareAvg * 0.25);
-    const hiHatThreshold = Math.max(0.03, hiHatAvg * 0.2);
-    
-    // Trigger dramatic pulses on onset detection with instant attack
-    if (kickOnset > kickThreshold) {
-      // Kick detected - explosive instant response
-      this.kickIntensity = Math.min(1, this.kickIntensity + kickOnset * 10.0);
-    }
-    if (snareOnset > snareThreshold) {
-      // Snare detected - explosive instant response
-      this.snareIntensity = Math.min(1, this.snareIntensity + snareOnset * 9.0);
-    }
-    if (hiHatOnset > hiHatThreshold) {
-      // Hi-hat detected - sharp instant response
-      this.hiHatIntensity = Math.min(1, this.hiHatIntensity + hiHatOnset * 8.0);
-    }
-    
-    // Very fast decay between beats for extreme dramatic dips
-    this.kickIntensity *= this.beatDecayRate;
-    this.snareIntensity *= this.beatDecayRate;
-    this.hiHatIntensity *= this.beatDecayRate;
-    
-    // Track sustained bass with smooth interpolation (adds subtle continuous glow)
-    this.bassLevel = this.bassLevel * 0.82 + sustainedBass * 0.18;
-    
-    // Store current energy for next frame comparison (minimal smoothing for sharp detection)
-    this.previousBassEnergy = kickEnergy * 0.7 + this.previousBassEnergy * 0.3;
-    this.previousSnareEnergy = snareEnergy * 0.7 + this.previousSnareEnergy * 0.3;
-    this.previousHiHatEnergy = hiHatEnergy * 0.7 + this.previousHiHatEnergy * 0.3;
-    
-    // Combine all elements: transients drive dramatic pulses, bass adds subtle continuous glow
-    // Weight kick highest (most dramatic), then snare, then hi-hat
-    const combined = (this.kickIntensity * 0.5) + (this.snareIntensity * 0.3) + (this.hiHatIntensity * 0.2) + (this.bassLevel * 0.1);
-    
-    return Math.max(0, Math.min(1, combined));
   }
   
   /**
