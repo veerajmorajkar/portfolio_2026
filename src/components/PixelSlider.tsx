@@ -46,35 +46,41 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
   // Wait for layout to be completely ready before showing knob
   useEffect(() => {
     let mounted = true;
-    let rafId: number;
+    let attempts = 0;
+    const maxAttempts = 10;
     
     const checkLayout = () => {
-      if (!mounted) return;
+      if (!mounted || attempts >= maxAttempts) {
+        if (mounted) setLayoutReady(true); // Show anyway after max attempts
+        return;
+      }
       
-      // Wait for multiple frames to ensure CSS is fully applied
-      rafId = requestAnimationFrame(() => {
-        rafId = requestAnimationFrame(() => {
-          rafId = requestAnimationFrame(() => {
-            if (mounted && trackRef.current) {
-              // Verify the track has actual dimensions
-              const rect = trackRef.current.getBoundingClientRect();
-              if (rect.width > 0 && rect.height > 0) {
-                setLayoutReady(true);
-              } else {
-                // Retry if dimensions aren't ready yet
-                checkLayout();
-              }
+      attempts++;
+      
+      requestAnimationFrame(() => {
+        if (!mounted || !trackRef.current) return;
+        
+        // Verify the track has actual dimensions
+        const rect = trackRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          // Wait one more frame to ensure everything is painted
+          requestAnimationFrame(() => {
+            if (mounted) {
+              setLayoutReady(true);
             }
           });
-        });
+        } else {
+          // Retry if dimensions aren't ready yet
+          setTimeout(checkLayout, 50);
+        }
       });
     };
     
-    checkLayout();
+    // Start checking after a small delay to let CSS settle
+    setTimeout(checkLayout, 100);
     
     return () => {
       mounted = false;
-      if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
 

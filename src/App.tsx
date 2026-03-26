@@ -152,8 +152,6 @@ function AppContent() {
     flyingControls.set({
       x: introRect.left + introRect.width / 2,
       y: introRect.top + introRect.height / 2,
-      width: introRect.width, // Start with intro disc size
-      height: introRect.height,
       scale: 1,
       opacity: 1,
       scaleX: 1,
@@ -312,7 +310,6 @@ function AppContent() {
     const section = getSectionById(discId);
     
     const slotCenter = getSlotCenter(discId);
-    const slotSize = getSlotSize(discId);
     const slotZ = getSlotZIndex(discId);
     const platter = getPlatterCenter();
 
@@ -329,8 +326,6 @@ function AppContent() {
     flyingControls.set({
       x: slotCenter.x,
       y: slotCenter.y,
-      width: slotSize,
-      height: slotSize,
       scale: 1,
       opacity: 1,
       scaleX: 1,
@@ -393,7 +388,6 @@ function AppContent() {
     const section = getSectionById(discId);
     const platter = getPlatterCenter();
     const slotCenter = getSlotCenter(discId);
-    const slotSize = getSlotSize(discId);
     const slotZ = getSlotZIndex(discId);
 
     setFlyingImage(section.discImage);
@@ -405,8 +399,6 @@ function AppContent() {
     flyingControls.set({
       x: platter.x,
       y: platter.y,
-      width: slotSize,
-      height: slotSize,
       scale: 1,
       opacity: 1,
       scaleX: 1,
@@ -499,15 +491,12 @@ function AppContent() {
 
     const section = getSectionById(discId);
     const platter = getPlatterCenter();
-    const slotSize = getSlotSize(discId);
     setFlyingImage(section.discImage);
     setFlyingDiscId(discId);
     setFlyingZIndex(999);
     flyingControls.set({
       x: platter.x,
       y: platter.y,
-      width: slotSize,
-      height: slotSize,
       scale: 1,
       opacity: 1,
       scaleX: 1,
@@ -549,15 +538,12 @@ function AppContent() {
 
     const oldSection = getSectionById(oldId);
     const platter = getPlatterCenter();
-    const slotSize = getSlotSize(oldId);
     setFlyingImage(oldSection.discImage);
     setFlyingDiscId(oldId);
     setFlyingZIndex(999);
     flyingControls.set({
       x: platter.x,
       y: platter.y,
-      width: slotSize,
-      height: slotSize,
       scale: 1,
       opacity: 1,
       scaleX: 1,
@@ -753,6 +739,8 @@ function AppContent() {
               zIndex: flyingZIndex,
               pointerEvents: "none",
               display: flyingVisible ? "block" : "none",
+              width: "var(--disc-size)", // Use CSS variable for consistent size
+              height: "var(--disc-size)",
             }}
           >
             {flyingImage && (

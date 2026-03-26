@@ -5,15 +5,10 @@ import { TOKENS } from "../data/tokens";
 const SPIN_DURATION = 60 / TOKENS.animation.spinRpm;
 
 /**
- * A single square div that spins. The disc image is rendered as a
- * background-image so it's always visually centered. The div itself
- * is forced to be a perfect square via inline width + height in vw units.
+ * Ultra-optimized spinning disc with CSS animations for buttery smooth performance
  */
 const VinylRecordComponent: React.FC<VinylRecordProps> = ({ isSpinning, sectionTitle, discImage, color }) => {
   const discRef = useRef<HTMLDivElement>(null);
-  const pausedRotationRef = useRef<number>(0);
-  const animationIdRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null);
   
   // Check disc type and apply base rotation
   const isAboutDisc = color === "#30D5C8";
@@ -32,33 +27,11 @@ const VinylRecordComponent: React.FC<VinylRecordProps> = ({ isSpinning, sectionT
     if (!el) return;
 
     if (isSpinning) {
-      // Start spinning from the paused rotation
-      const startRotation = pausedRotationRef.current;
-      startTimeRef.current = performance.now();
-      
-      const animate = (currentTime: number) => {
-        if (!el || !startTimeRef.current) return;
-        
-        const elapsed = (currentTime - startTimeRef.current) / 1000; // seconds
-        const degreesPerSecond = 360 / SPIN_DURATION;
-        const currentRotation = startRotation + (elapsed * degreesPerSecond);
-        
-        el.style.transform = `rotate(${currentRotation}deg)`;
-        
-        animationIdRef.current = requestAnimationFrame(animate);
-      };
-      
-      animationIdRef.current = requestAnimationFrame(animate);
+      // Use CSS animation for ultra-smooth spinning
+      el.style.animation = `spin ${SPIN_DURATION}s linear infinite`;
       el.style.willChange = "transform";
-      
     } else {
-      // When paused, stop the animation and store current rotation
-      if (animationIdRef.current !== null) {
-        cancelAnimationFrame(animationIdRef.current);
-        animationIdRef.current = null;
-      }
-      
-      // Get the current rotation from the transform
+      // When paused, stop animation and maintain current rotation
       const computedStyle = window.getComputedStyle(el);
       const matrix = computedStyle.transform;
       
@@ -71,25 +44,12 @@ const VinylRecordComponent: React.FC<VinylRecordProps> = ({ isSpinning, sectionT
         }
       }
       
-      // Store the paused rotation
-      pausedRotationRef.current = currentRotation;
-      
-      // Keep the disc at current rotation
+      // Remove animation and set fixed rotation
+      el.style.animation = "none";
       el.style.transform = `rotate(${currentRotation}deg)`;
       el.style.willChange = "auto";
     }
-    
-    return () => {
-      if (animationIdRef.current !== null) {
-        cancelAnimationFrame(animationIdRef.current);
-      }
-    };
   }, [isSpinning, baseRotation]);
-  
-  // Reset paused rotation when disc changes
-  useEffect(() => {
-    pausedRotationRef.current = baseRotation;
-  }, [color, baseRotation]);
 
   return (
     <div
@@ -106,8 +66,11 @@ const VinylRecordComponent: React.FC<VinylRecordProps> = ({ isSpinning, sectionT
         backgroundRepeat: "no-repeat",
         imageRendering: "pixelated",
         transformOrigin: "center center",
-        transform: "translateZ(0)", // Force GPU acceleration
-        backfaceVisibility: "hidden", // Optimize rendering
+        transform: `rotate(${baseRotation}deg)`,
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+        perspective: 1000,
+        WebkitPerspective: 1000,
       }}
     />
   );
