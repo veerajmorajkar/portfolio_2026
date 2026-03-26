@@ -86,10 +86,10 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
-                  height: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
+                  width: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
+                  height: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
-                  border: "1.5px solid #ffffff",
+                  border: "1px solid #ffffff",
                   background: "transparent",
                   cursor: "pointer",
                   padding: 0,
@@ -106,10 +106,10 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
-                  height: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
+                  width: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
+                  height: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
-                  border: "1.5px solid #ffffff",
+                  border: "1px solid #ffffff",
                   background: "transparent",
                   cursor: "pointer",
                   padding: 0,
@@ -126,10 +126,10 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
-                  height: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
+                  width: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
+                  height: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
-                  border: "1.5px solid #ffffff",
+                  border: "1px solid #ffffff",
                   background: "transparent",
                   cursor: "pointer",
                   padding: 0,
