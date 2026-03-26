@@ -1,4 +1,4 @@
-import { useEffect, memo, useCallback } from "react";
+import { useEffect, memo, useCallback, useState } from "react";
 
 interface ProjectPreviewModalProps {
   isOpen: boolean;
@@ -16,6 +16,14 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
   projectName,
   previewImage,
 }) => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleEscape = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape" && isOpen) {
       onClose();
@@ -28,6 +36,9 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
   }, [handleEscape]);
 
   if (!isOpen) return null;
+
+  const buttonSize = isMobile ? "8px" : "12px";
+  const buttonBorder = isMobile ? "0.5px solid #ffffff" : "1px solid #ffffff";
 
   return (
     <>
@@ -82,14 +93,14 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               borderBottom: border,
             }}
           >
-            <div style={{ display: "flex", gap: "clamp(3px, 0.8vw, 5px)" }}>
+            <div style={{ display: "flex", gap: isMobile ? "4px" : "6px" }}>
               <button
                 onClick={onClose}
                 style={{
-                  width: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
-                  height: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
+                  width: buttonSize,
+                  height: buttonSize,
                   borderRadius: "50%",
-                  border: "1px solid #ffffff",
+                  border: buttonBorder,
                   background: "transparent",
                   cursor: "pointer",
                   padding: 0,
@@ -106,10 +117,10 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
-                  height: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
+                  width: buttonSize,
+                  height: buttonSize,
                   borderRadius: "50%",
-                  border: "1px solid #ffffff",
+                  border: buttonBorder,
                   background: "transparent",
                   cursor: "pointer",
                   padding: 0,
@@ -126,10 +137,10 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
-                  height: window.innerWidth <= 900 ? "6px" : "clamp(6px, 1.2vw, 8px)",
+                  width: buttonSize,
+                  height: buttonSize,
                   borderRadius: "50%",
-                  border: "1px solid #ffffff",
+                  border: buttonBorder,
                   background: "transparent",
                   cursor: "pointer",
                   padding: 0,
