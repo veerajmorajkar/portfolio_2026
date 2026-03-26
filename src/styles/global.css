@@ -348,21 +348,23 @@ img {
     overflow-y: auto;
     overflow-x: hidden;
   }
-}
-
-/* Small mobile screens - extra adjustments for shorter screens */
-@media screen and (max-width: 768px) and (orientation: portrait) and (max-height: 700px) {
-  :root {
-    --turntable-top: 28vh; /* Move turntable up slightly */
-    --knob-size: 3.8vh; /* Smaller knobs for better fit */
-  }
-}
   
   #root {
     overflow-y: auto;
     overflow-x: hidden;
     height: auto;
     min-height: 100vh;
+  }
+}
+
+/* Small mobile screens - extra adjustments for shorter screens */
+@media screen and (max-width: 768px) and (orientation: portrait) and (max-height: 700px) {
+  :root {
+    --turntable-top: 29vh; /* Move turntable up slightly */
+    --turntable-width: 130vw; /* Slightly smaller turntable */
+    --knob-size: 3.8vh; /* Smaller knobs for better fit */
+    --disc-size: 42vw; /* Ensure disc size matches across states */
+    --platter-disc-size: 55%; /* Keep disc size relative to platter consistent */
   }
 }
 

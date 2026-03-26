@@ -78,16 +78,16 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "8px 10px",
+              padding: "clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px)",
               borderBottom: border,
             }}
           >
-            <div style={{ display: "flex", gap: "5px" }}>
+            <div style={{ display: "flex", gap: "clamp(3px, 0.8vw, 5px)" }}>
               <button
                 onClick={onClose}
                 style={{
-                  width: "8px",
-                  height: "8px",
+                  width: "clamp(6px, 1.2vw, 8px)",
+                  height: "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
                   border: "1.5px solid #ffffff",
                   background: "transparent",
@@ -106,8 +106,8 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: "8px",
-                  height: "8px",
+                  width: "clamp(6px, 1.2vw, 8px)",
+                  height: "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
                   border: "1.5px solid #ffffff",
                   background: "transparent",
@@ -126,8 +126,8 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: "8px",
-                  height: "8px",
+                  width: "clamp(6px, 1.2vw, 8px)",
+                  height: "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
                   border: "1.5px solid #ffffff",
                   background: "transparent",
@@ -147,15 +147,15 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
             <div
               style={{
                 fontFamily: fontPixel,
-                fontSize: "8px",
+                fontSize: "clamp(6px, 1.5vw, 8px)",
                 color: "#ffffff",
-                letterSpacing: "2px",
+                letterSpacing: "clamp(1px, 0.3vw, 2px)",
                 textTransform: "uppercase",
               }}
             >
               {projectName} - Preview
             </div>
-            <div style={{ width: "34px" }} /> {/* spacer to center title */}
+            <div style={{ width: "clamp(24px, 5vw, 34px)" }} /> {/* spacer to center title */}
           </div>
 
           {/* Image container */}
