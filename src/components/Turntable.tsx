@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useTurntable } from "../context/TurntableContext";
 import { getSectionById } from "../data/sections";
 import VinylRecord from "./VinylRecord";
@@ -57,9 +57,26 @@ const TurntableComponent: React.FC<TurntableProps> = ({
   const tonearmState = tonearmReady ? deriveTonearmState(playbackState) : "parked";
   const isSpinning = playbackState === "playing" && tonearmReady;
   
-  const knobSize = useMemo(() => {
-    if (typeof window === 'undefined') return 74;
-    return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--knob-size')) * window.innerHeight / 100;
+  // Calculate knob size more reliably
+  const [knobSize, setKnobSize] = useState(74);
+  
+  useEffect(() => {
+    const calculateKnobSize = () => {
+      const knobSizeVh = parseFloat(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--knob-size')
+          .trim()
+      );
+      const size = (knobSizeVh * window.innerHeight) / 100;
+      setKnobSize(size);
+    };
+    
+    // Calculate on mount
+    calculateKnobSize();
+    
+    // Recalculate on resize
+    window.addEventListener('resize', calculateKnobSize);
+    return () => window.removeEventListener('resize', calculateKnobSize);
   }, []);
   
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 900;

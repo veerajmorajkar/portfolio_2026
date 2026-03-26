@@ -34,32 +34,78 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
   knobRotation = 0,
 }) => {
   const trackRef = useRef<HTMLDivElement>(null);
+  const knobRef = useRef<HTMLImageElement>(null);
   const [dragging, setDragging] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [layoutReady, setLayoutReady] = useState(false);
 
   const isHorizontal = orientation === "horizontal";
   const knobHeight = knobWidth / KNOB_ASPECT;
 
-  // Wait for component to mount and layout to complete
+  const clamp = (v: number) => Math.max(0, Math.min(1, v));
+
+  // Wait for layout to be completely ready before showing knob
   useEffect(() => {
-    // Use requestAnimationFrame to ensure layout is complete
-    const frame1 = requestAnimationFrame(() => {
-      const frame2 = requestAnimationFrame(() => {
-        setIsReady(true);
+    let mounted = true;
+    let rafId: number;
+    
+    const checkLayout = () => {
+      if (!mounted) return;
+      
+      // Wait for multiple frames to ensure CSS is fully applied
+      rafId = requestAnimationFrame(() => {
+        rafId = requestAnimationFrame(() => {
+          rafId = requestAnimationFrame(() => {
+            if (mounted && trackRef.current) {
+              // Verify the track has actual dimensions
+              const rect = trackRef.current.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0) {
+                setLayoutReady(true);
+              } else {
+                // Retry if dimensions aren't ready yet
+                checkLayout();
+              }
+            }
+          });
+        });
       });
-      return () => cancelAnimationFrame(frame2);
-    });
-    return () => cancelAnimationFrame(frame1);
+    };
+    
+    checkLayout();
+    
+    return () => {
+      mounted = false;
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
-  const clamp = (v: number) => Math.max(0, Math.min(1, v));
+  // Update knob position when value changes or layout becomes ready
+  useEffect(() => {
+    if (!layoutReady || !knobRef.current || !trackRef.current) return;
+    
+    const track = trackRef.current;
+    const knob = knobRef.current;
+    const rect = track.getBoundingClientRect();
+    
+    const knobDim = isHorizontal ? knobWidth : knobHeight;
+    const trackDim = isHorizontal ? rect.width : rect.height;
+    const usableSpace = trackDim - knobDim;
+    
+    if (usableSpace <= 0) return;
+    
+    const position = value * usableSpace;
+    
+    if (isHorizontal) {
+      knob.style.left = `${position}px`;
+    } else {
+      knob.style.top = `${(1 - value) * usableSpace}px`;
+    }
+  }, [value, layoutReady, isHorizontal, knobWidth, knobHeight]);
 
   const getValueFromPointer = useCallback(
     (clientX: number, clientY: number) => {
       const track = trackRef.current;
       if (!track) return value;
       const rect = track.getBoundingClientRect();
-      // The knob travels within [halfKnob .. trackLength - halfKnob]
       const knobDim = isHorizontal ? knobWidth : knobHeight;
       const trackLen = isHorizontal ? rect.width : rect.height;
       const usable = trackLen - knobDim;
@@ -69,7 +115,6 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
         const pos = clientX - rect.left - knobDim / 2;
         return clamp(pos / usable);
       } else {
-        // Vertical: top = 1, bottom = 0
         const pos = clientY - rect.top - knobDim / 2;
         return clamp(1 - pos / usable);
       }
@@ -135,22 +180,6 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
     return () => document.removeEventListener("touchmove", prevent);
   }, [dragging]);
 
-  // Knob slides from 0 to (track - knobSize), keeping it fully within the track
-  const knobDim = isHorizontal ? knobWidth : knobHeight;
-  
-  // Calculate position - use pixel values for precision
-  const getKnobPosition = () => {
-    if (!isReady) {
-      // Before ready, position at the correct spot but with opacity 0
-      return isHorizontal
-        ? `calc(${value * 100}% - ${value * knobDim}px)`
-        : `calc(${(1 - value) * 100}% - ${(1 - value) * knobDim}px)`;
-    }
-    return isHorizontal
-      ? `calc(${value * 100}% - ${value * knobDim}px)`
-      : `calc(${(1 - value) * 100}% - ${(1 - value) * knobDim}px)`;
-  };
-
   return (
     <div
       ref={trackRef}
@@ -175,22 +204,27 @@ const PixelSliderComponent: React.FC<PixelSliderProps> = ({
         userSelect: "none",
       }}
     >
-      {/* Knob image */}
+      {/* Knob image - hidden until layout is ready */}
       <img
+        ref={knobRef}
         src={KNOB_SRC}
         alt=""
         draggable={false}
         style={{
           position: "absolute",
-          [isHorizontal ? "left" : "top"]: getKnobPosition(),
+          left: isHorizontal ? 0 : undefined,
+          top: !isHorizontal ? 0 : undefined,
           width: `${knobWidth}px`,
           height: `${knobHeight}px`,
           imageRendering: "pixelated",
           pointerEvents: "none",
           transform: knobRotation ? `rotate(${knobRotation}deg)` : undefined,
           filter: dragging ? "brightness(1.15)" : "none",
-          opacity: isReady ? 1 : 0,
-          transition: isReady ? (dragging ? "none" : "filter 0.15s, opacity 0.2s") : "opacity 0.2s",
+          opacity: layoutReady ? 1 : 0,
+          transition: layoutReady 
+            ? (dragging ? "filter 0.15s" : "filter 0.15s, opacity 0.3s ease-out") 
+            : "none",
+          willChange: dragging ? "filter" : "auto",
         }}
       />
     </div>
