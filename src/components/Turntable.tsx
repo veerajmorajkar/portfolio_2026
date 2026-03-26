@@ -119,7 +119,7 @@ const TurntableComponent: React.FC<TurntableProps> = ({
     
     // iPhone 12 and similar (6.1" - around 844px height)
     if (screenHeight >= 800 && screenHeight <= 900) {
-      return "translateY(calc(var(--turntable-width) * 0.145))"; // Fine-tune position
+      return "translateY(calc(var(--turntable-width) * 0.138))"; // Fine-tune position
     }
     // Smaller phones
     else if (screenHeight < 700) {
