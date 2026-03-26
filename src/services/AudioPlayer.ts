@@ -61,8 +61,9 @@ export class AudioPlayer implements AudioPlayerService {
       this.filterNode = this.ctx.createBiquadFilter();
       this.analyserNode = this.ctx.createAnalyser();
 
-      // Configure analyser for beat onset detection
-      this.analyserNode.fftSize = 4096; // Even higher resolution for precise frequency separation
+      // Configure analyser - use smaller FFT size on mobile for better performance
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      this.analyserNode.fftSize = isMobile ? 2048 : 4096; // Smaller FFT on mobile
       this.analyserNode.smoothingTimeConstant = 0.1; // Minimal smoothing for instant transient response
       const bufferLength = this.analyserNode.frequencyBinCount;
       this.dataArray = new Uint8Array(bufferLength);
@@ -76,9 +77,12 @@ export class AudioPlayer implements AudioPlayerService {
       this.filterNode.connect(this.analyserNode);
       this.analyserNode.connect(this.gainNode);
       this.gainNode.connect(this.ctx.destination);
-    } catch {
+    } catch (err) {
       // If Web Audio setup fails, fall back to basic HTMLAudioElement
+      console.error('Web Audio setup failed:', err);
       this.ctx = null;
+      this.analyserNode = null;
+      this.dataArray = null;
     }
   }
 

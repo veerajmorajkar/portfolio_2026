@@ -62,9 +62,6 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
 
   // Beat-reactive pulsation with instant peaks and smooth buttery decay
   useEffect(() => {
-    // TEMPORARILY DISABLED FOR DEBUGGING
-    return;
-    
     if (!visible || !containerRef.current) {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -74,6 +71,9 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
 
     const container = containerRef.current;
     
+    // Detect mobile for performance optimization
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
     // Separate intensity tracking for multi-band reactivity
     let currentIntensity = 0.0; // Near-zero base for maximum dramatic contrast
     let kickIntensity = 0.0;
@@ -82,7 +82,7 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
     let bassIntensity = 0.0;
     
     let lastTime = performance.now();
-    const targetFPS = 60; // High FPS for buttery smooth transitions
+    const targetFPS = isMobile ? 30 : 60; // Lower FPS on mobile to prevent crashes
     const frameInterval = 1000 / targetFPS;
     
     // Faster decay for more dramatic dips
@@ -193,6 +193,7 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
   if (!visible || !sectionId) return null;
 
   const palette = GLOW_PALETTES[sectionId] || GLOW_PALETTES.about;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   return (
     <div
@@ -251,66 +252,71 @@ const AuroraGlowComponent: React.FC<AuroraGlowProps> = ({ sectionId, visible }) 
         transition: "opacity 0.05s cubic-bezier(0.4, 0.0, 0.2, 1)",
       }} />
       
-      {/* Highlight layer - top accent, reacts to overall intensity */}
-      <div style={{
-        position: "absolute",
-        inset: "-65px",
-        background: `radial-gradient(ellipse at 50% 20%, ${palette.highlight}CC 0%, ${palette.highlight}77 25%, ${palette.highlight}33 50%, transparent 70%)`,
-        pointerEvents: "none",
-        filter: "blur(50px)",
-        opacity: 'var(--glow-intensity)',
-        animation: "aurora-shift-1 12s ease-in-out infinite reverse",
-        willChange: "opacity, transform",
-        transition: "opacity 0.08s cubic-bezier(0.4, 0.0, 0.2, 1)",
-      }} />
-      
-      {/* Bass sustain layer - continuous low-level glow */}
-      <div style={{
-        position: "absolute",
-        inset: "-50px",
-        background: `radial-gradient(ellipse at 50% 60%, ${palette.primary}99 0%, ${palette.primary}55 30%, ${palette.primary}22 50%, transparent 70%)`,
-        pointerEvents: "none",
-        filter: "blur(45px)",
-        opacity: 'var(--bass-intensity)',
-        willChange: "opacity",
-        transition: "opacity 0.15s ease-out",
-      }} />
-      
-      {/* Outer blend layer - mix all colors with dramatic pulses */}
-      <div style={{
-        position: "absolute",
-        inset: "-80px",
-        background: `radial-gradient(ellipse at 50% 50%, ${palette.primary}88 0%, ${palette.secondary}66 20%, ${palette.accent}66 40%, ${palette.highlight}44 60%, transparent 85%)`,
-        pointerEvents: "none",
-        filter: "blur(60px)",
-        opacity: 'var(--glow-intensity)',
-        willChange: "opacity",
-        transition: "opacity 0.08s cubic-bezier(0.4, 0.0, 0.2, 1)",
-      }} />
-      
-      {/* Atmospheric diffuse layer - soft outer glow */}
-      <div style={{
-        position: "absolute",
-        inset: "-100px",
-        background: `radial-gradient(ellipse at 50% 50%, ${palette.accent}66 0%, ${palette.highlight}44 35%, ${palette.primary}22 60%, transparent 85%)`,
-        pointerEvents: "none",
-        filter: "blur(75px)",
-        opacity: 'calc(var(--glow-intensity) * 0.85)',
-        willChange: "opacity",
-        transition: "opacity 0.12s ease-out",
-      }} />
-      
-      {/* Ultra-wide ambient layer - creates the dramatic bloom effect */}
-      <div style={{
-        position: "absolute",
-        inset: "-120px",
-        background: `radial-gradient(ellipse at 50% 50%, ${palette.primary}55 0%, ${palette.secondary}44 25%, ${palette.accent}44 50%, ${palette.highlight}22 70%, transparent 90%)`,
-        pointerEvents: "none",
-        filter: "blur(90px)",
-        opacity: 'calc(var(--glow-intensity) * 0.75)',
-        willChange: "opacity",
-        transition: "opacity 0.15s ease-out",
-      }} />
+      {/* Only render additional layers on desktop for performance */}
+      {!isMobile && (
+        <>
+          {/* Highlight layer - top accent, reacts to overall intensity */}
+          <div style={{
+            position: "absolute",
+            inset: "-65px",
+            background: `radial-gradient(ellipse at 50% 20%, ${palette.highlight}CC 0%, ${palette.highlight}77 25%, ${palette.highlight}33 50%, transparent 70%)`,
+            pointerEvents: "none",
+            filter: "blur(50px)",
+            opacity: 'var(--glow-intensity)',
+            animation: "aurora-shift-1 12s ease-in-out infinite reverse",
+            willChange: "opacity, transform",
+            transition: "opacity 0.08s cubic-bezier(0.4, 0.0, 0.2, 1)",
+          }} />
+          
+          {/* Bass sustain layer - continuous low-level glow */}
+          <div style={{
+            position: "absolute",
+            inset: "-50px",
+            background: `radial-gradient(ellipse at 50% 60%, ${palette.primary}99 0%, ${palette.primary}55 30%, ${palette.primary}22 50%, transparent 70%)`,
+            pointerEvents: "none",
+            filter: "blur(45px)",
+            opacity: 'var(--bass-intensity)',
+            willChange: "opacity",
+            transition: "opacity 0.15s ease-out",
+          }} />
+          
+          {/* Outer blend layer - mix all colors with dramatic pulses */}
+          <div style={{
+            position: "absolute",
+            inset: "-80px",
+            background: `radial-gradient(ellipse at 50% 50%, ${palette.primary}88 0%, ${palette.secondary}66 20%, ${palette.accent}66 40%, ${palette.highlight}44 60%, transparent 85%)`,
+            pointerEvents: "none",
+            filter: "blur(60px)",
+            opacity: 'var(--glow-intensity)',
+            willChange: "opacity",
+            transition: "opacity 0.08s cubic-bezier(0.4, 0.0, 0.2, 1)",
+          }} />
+          
+          {/* Atmospheric diffuse layer - soft outer glow */}
+          <div style={{
+            position: "absolute",
+            inset: "-100px",
+            background: `radial-gradient(ellipse at 50% 50%, ${palette.accent}66 0%, ${palette.highlight}44 35%, ${palette.primary}22 60%, transparent 85%)`,
+            pointerEvents: "none",
+            filter: "blur(75px)",
+            opacity: 'calc(var(--glow-intensity) * 0.85)',
+            willChange: "opacity",
+            transition: "opacity 0.12s ease-out",
+          }} />
+          
+          {/* Ultra-wide ambient layer - creates the dramatic bloom effect */}
+          <div style={{
+            position: "absolute",
+            inset: "-120px",
+            background: `radial-gradient(ellipse at 50% 50%, ${palette.primary}55 0%, ${palette.secondary}44 25%, ${palette.accent}44 50%, ${palette.highlight}22 70%, transparent 90%)`,
+            pointerEvents: "none",
+            filter: "blur(90px)",
+            opacity: 'calc(var(--glow-intensity) * 0.75)',
+            willChange: "opacity",
+            transition: "opacity 0.15s ease-out",
+          }} />
+        </>
+      )}
     </div>
   );
 };
