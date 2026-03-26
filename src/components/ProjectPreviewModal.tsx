@@ -86,8 +86,8 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: "clamp(6px, 1.2vw, 8px)",
-                  height: "clamp(6px, 1.2vw, 8px)",
+                  width: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
+                  height: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
                   border: "1.5px solid #ffffff",
                   background: "transparent",
@@ -106,8 +106,8 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: "clamp(6px, 1.2vw, 8px)",
-                  height: "clamp(6px, 1.2vw, 8px)",
+                  width: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
+                  height: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
                   border: "1.5px solid #ffffff",
                   background: "transparent",
@@ -126,8 +126,8 @@ const ProjectPreviewModalComponent: React.FC<ProjectPreviewModalProps> = ({
               <button
                 onClick={onClose}
                 style={{
-                  width: "clamp(6px, 1.2vw, 8px)",
-                  height: "clamp(6px, 1.2vw, 8px)",
+                  width: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
+                  height: window.innerWidth <= 900 ? "10px" : "clamp(6px, 1.2vw, 8px)",
                   borderRadius: "50%",
                   border: "1.5px solid #ffffff",
                   background: "transparent",
