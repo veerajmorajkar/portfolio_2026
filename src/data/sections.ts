@@ -100,8 +100,8 @@ export const SECTIONS: SectionData[] = [
       type: "projects",
       entries: [
         {
-          name: "Login/Logout System",
-          description: "Built a secure Python authentication module with login/logout flows, session handling, and activity logging for auditability and security monitoring.",
+          name: "Smart Mirror with Raspberry Pi",
+          description: "Developed a Raspberry Pi‑based smart mirror with a voice assistant delivering real‑time time, date, news and custom Google searches, plus facial‑recognition attendance that automatically logs users and displays a personalized schedule.",
           links: [
             { label: "GitHub", url: "https://github.com/veerajmorajkar/register-system" },
             { label: "Preview", url: "#preview" },
