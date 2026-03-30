@@ -41,22 +41,28 @@ function WindowBar({ title }: { title: string }) {
       justifyContent: "space-between",
       padding: "8px 10px",
       borderBottom: border,
+      gap: "8px",
     }}>
-      <div style={{ display: "flex", gap: "5px" }}>
+      <div style={{ display: "flex", gap: "5px", flexShrink: 0 }}>
         <span style={dot} />
         <span style={dot} />
         <span style={dot} />
       </div>
       <div style={{
         fontFamily: fontPixel,
-        fontSize: "clamp(7px, 0.6vw, 10px)",
+        fontSize: "clamp(6px, 0.6vw, 9px)",
         color: "#ffffff",
-        letterSpacing: "2px",
+        letterSpacing: "1px",
         textTransform: "uppercase",
+        textAlign: "center",
+        lineHeight: "1.3",
+        flex: 1,
+        wordBreak: "break-word",
+        hyphens: "auto",
       }}>
         {title}
       </div>
-      <div style={{ width: "34px" }} /> {/* spacer to center title */}
+      <div style={{ width: "34px", flexShrink: 0 }} /> {/* spacer to center title */}
     </div>
   );
 }
