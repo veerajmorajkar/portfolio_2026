@@ -21,7 +21,7 @@ export const SECTIONS: SectionData[] = [
           company: "Investza",
           role: "Lead Frontend Developer",
           description: "Built 3 production websites with React, TypeScript, and Vite. Integrated REST APIs for mutual fund data, managed 4 interns, and translated Figma designs into polished UI with smooth animations.",
-          dateRange: "Nov 2025 – Present",
+          dateRange: "Apr 2025 – Apr 2026",
         },
         {
           company: "Juggie's Coffer",
@@ -74,7 +74,7 @@ export const SECTIONS: SectionData[] = [
         {
           institution: "Vidyalankar Institute of Technology",
           degree: "B.Tech in Electronics and Telecommunication",
-          dateRange: "June 2021 – Jul 2025",
+          dateRange: "June 2021 – Mar 2025",
         },
         {
           institution: "Lakshya Institute",
